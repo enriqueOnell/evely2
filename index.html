@@ -420,4 +420,449 @@
                         </div>
                         <div onclick="goToSlide(3)" class="cursor-pointer bg-slate-50 hover:bg-indigo-50 border border-slate-200/80 p-4 rounded-2xl transition">
                             <span class="text-xs font-bold text-amber-600 uppercase">Parte 3 • 2 min</span>
-                            <h3 class="font-display font-bold text-lg text-slate-800 mt-0.5">👀 What’s missing?</h
+                            <h3 class="font-display font-bold text-lg text-slate-800 mt-0.5">👀 What’s missing?</h3>
+                            <p class="text-xs text-slate-500 mt-1">Juego de memoria visual para adivinar qué falta.</p>
+                        </div>
+                    </div>
+
+                    <button onclick="nextSlide(); speakEnglish('Let\\'s learn the colors!');" class="mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:scale-105 transition transform flex items-center gap-3">
+                        <span>¡Comenzar Actividad!</span>
+                        <i class="fas fa-play-circle text-2xl"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- SLIDE 1: PART 1 - LET'S LEARN! ---
+        function renderPart1Slide(container) {
+            container.innerHTML = `
+                <div class="flex flex-col h-full justify-between space-y-6">
+                    <!-- Header & Timer -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Primera Parte • 1 Minuto</span>
+                            <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-800 mt-1">🗣️ Let’s learn!</h2>
+                            <p class="text-sm text-slate-500">Haz clic en cada tarjeta para escuchar el color y pídeles que repitan.</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-2xl">
+                            <i class="fas fa-stopwatch text-indigo-600 text-lg"></i>
+                            <span id="timer-display" class="font-mono font-bold text-xl text-slate-800">1:00</span>
+                            <button id="timer-btn" onclick="toggleTimer()" class="ml-2 bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-indigo-700 transition">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                            <button onclick="resetTimer(60)" title="Reiniciar" class="text-slate-400 hover:text-slate-600 p-1">
+                                <i class="fas fa-redo-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Color Cards Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 my-auto">
+                        ${COLORS.map(c => `
+                            <div onclick="triggerLearnCard('${c.id}')" id="learn-card-${c.id}" class="card-bounce cursor-pointer ${c.bgClass} ${c.textClass} rounded-3xl p-5 sm:p-6 shadow-lg ${c.shadowClass} border-b-8 ${c.borderClass} flex flex-col items-center justify-center text-center transition-all hover:-translate-y-1.5">
+                                <span class="text-5xl sm:text-6xl mb-3 drop-shadow">${c.emoji}</span>
+                                <h3 class="font-display text-2xl sm:text-3xl font-extrabold tracking-wide">${c.en}</h3>
+                                <span class="text-sm font-semibold opacity-90 mt-1">(${c.es})</span>
+                                <div class="mt-4 bg-black/15 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                                    <i class="fas fa-volume-up"></i> Escuchar
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Facilitator Tip -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 text-sm text-amber-900">
+                            <span class="text-2xl">💡</span>
+                            <span><strong>Guía:</strong> Di en voz alta <em>“Red! (Rojo)”</em> y anima al grupo a repetir juntos.</span>
+                        </div>
+                        <button onclick="playAllColorsSequence()" class="shrink-0 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                            <i class="fas fa-magic mr-1"></i> Repasar todos
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function triggerLearnCard(id) {
+            const color = COLORS.find(c => c.id === id);
+            if (!color) return;
+            playTone('pop');
+            speakEnglish(`${color.en}!`);
+            showToast(color.emoji, `"${color.en}!" (${color.es})`);
+
+            const card = document.getElementById(`learn-card-${id}`);
+            if (card) {
+                card.classList.add('ring-4', 'ring-indigo-400', 'scale-105');
+                setTimeout(() => card.classList.remove('ring-4', 'ring-indigo-400', 'scale-105'), 600);
+            }
+        }
+
+        function playAllColorsSequence() {
+            COLORS.forEach((c, index) => {
+                setTimeout(() => {
+                    if (currentSlide === 1) triggerLearnCard(c.id);
+                }, index * 1300);
+            });
+        }
+
+        // --- SLIDE 2: PART 2 - FIND THE COLOR! ---
+        function renderPart2Slide(container) {
+            container.innerHTML = `
+                <div class="flex flex-col h-full justify-between space-y-6">
+                    <!-- Header & Timer -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase">Segunda Parte • 2 Minutos</span>
+                            <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-800 mt-1">🏃 Find the color!</h2>
+                            <p class="text-sm text-slate-500">Gira la ruleta o elige un color. ¡Los participantes deben buscar un objeto rápido!</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-2xl">
+                            <i class="fas fa-stopwatch text-emerald-600 text-lg"></i>
+                            <span id="timer-display" class="font-mono font-bold text-xl text-slate-800">2:00</span>
+                            <button id="timer-btn" onclick="toggleTimer()" class="ml-2 bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-emerald-700 transition">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                            <button onclick="resetTimer(120)" title="Reiniciar" class="text-slate-400 hover:text-slate-600 p-1">
+                                <i class="fas fa-redo-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Center Challenge Stage -->
+                    <div id="find-stage" class="my-auto flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/70 text-center min-h-[240px] transition-all">
+                        ${renderFindStageContent()}
+                    </div>
+
+                    <!-- Manual Selector & Random Spin Button -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <span class="text-xs font-bold text-slate-400 self-center mr-1">Elegir directo:</span>
+                            ${COLORS.map(c => `
+                                <button onclick="selectFindColor('${c.id}')" class="${c.bgClass} ${c.textClass} px-3.5 py-2 rounded-xl font-display font-bold text-sm shadow hover:scale-105 transition">
+                                    ${c.en}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <button onclick="spinFindColor()" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-bold text-lg px-6 py-3 rounded-2xl shadow-lg shadow-emerald-200 hover:scale-105 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-dice text-xl"></i> ¡Color Aleatorio!
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFindStageContent() {
+            if (!currentFindColor) {
+                return `
+                    <span class="text-5xl mb-3">🔍</span>
+                    <h3 class="font-display text-2xl font-bold text-slate-700">¿Listos para buscar?</h3>
+                    <p class="text-slate-500 text-sm max-w-md mt-1">Presiona <strong>"¡Color Aleatorio!"</strong> para lanzar el reto al grupo.</p>
+                `;
+            }
+            const c = currentFindColor;
+            return `
+                <div class="w-full max-w-xl ${c.bgClass} ${c.textClass} rounded-3xl p-6 sm:p-8 shadow-xl ${c.shadowClass} border-b-8 ${c.borderClass} transform transition-all scale-100">
+                    <span class="inline-block bg-black/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+                        ¡Corre y encuéntralo!
+                    </span>
+                    <h3 class="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+                        “Find something ${c.en}!”
+                    </h3>
+                    <p class="mt-3 text-base sm:text-lg font-semibold opacity-95">
+                        ${c.emoji} Levanta un objeto <strong>${c.es.toUpperCase()}</strong> y di: <em>"${c.en}!"</em>
+                    </p>
+                    <button onclick="speakEnglish('Find something ${c.en}!')" class="mt-4 bg-white/25 hover:bg-white/35 px-4 py-1.5 rounded-full text-xs font-bold transition">
+                        <i class="fas fa-volume-up mr-1"></i> Repetir frase en inglés
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectFindColor(id) {
+            const found = COLORS.find(c => c.id === id);
+            if (!found) return;
+            currentFindColor = found;
+            playTone('pop');
+            speakEnglish(`Find something ${found.en}!`);
+            const stage = document.getElementById('find-stage');
+            if (stage) stage.innerHTML = renderFindStageContent();
+        }
+
+        function spinFindColor() {
+            let spins = 0;
+            const maxSpins = 8;
+            const interval = setInterval(() => {
+                const random = COLORS[Math.floor(Math.random() * COLORS.length)];
+                currentFindColor = random;
+                playTone('pop');
+                const stage = document.getElementById('find-stage');
+                if (stage) stage.innerHTML = renderFindStageContent();
+                spins++;
+                if (spins >= maxSpins) {
+                    clearInterval(interval);
+                    speakEnglish(`Find something ${currentFindColor.en}!`);
+                }
+            }, 90);
+        }
+
+        // --- SLIDE 3: PART 3 - WHAT'S MISSING? ---
+        function renderPart3Slide(container) {
+            container.innerHTML = `
+                <div class="flex flex-col h-full justify-between space-y-5">
+                    <!-- Header & Timer -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Tercera Parte • 2 Minutos</span>
+                            <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-800 mt-1">👀 What’s missing?</h2>
+                            <p class="text-sm text-slate-500">Observa los 5 colores, cierra los ojos y descubre cuál desapareció.</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-2xl">
+                            <i class="fas fa-stopwatch text-amber-600 text-lg"></i>
+                            <span id="timer-display" class="font-mono font-bold text-xl text-slate-800">2:00</span>
+                            <button id="timer-btn" onclick="toggleTimer()" class="ml-2 bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-amber-700 transition">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                            <button onclick="resetTimer(120)" title="Reiniciar" class="text-slate-400 hover:text-slate-600 p-1">
+                                <i class="fas fa-redo-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Banner -->
+                    <div id="missing-banner" class="text-center py-2 px-4 rounded-2xl bg-indigo-50 text-indigo-800 font-semibold text-sm sm:text-base">
+                        ${getMissingBannerText()}
+                    </div>
+
+                    <!-- Cards Display Area -->
+                    <div id="missing-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 my-auto">
+                        ${renderMissingCards()}
+                    </div>
+
+                    <!-- Guess Options (shown during guessing phase) -->
+                    <div id="missing-controls" class="flex flex-col items-center gap-3 pt-2">
+                        ${renderMissingControls()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getMissingBannerText() {
+            if (missingGameState === 'showing') return '👀 Paso 1: Pide al público que mire bien las 5 tarjetas.';
+            if (missingGameState === 'eyes_closed') return '🙈 Paso 2: "¡Close your eyes!" (¡Cierren los ojos!) — Elige qué tarjeta esconder o hazlo al azar.';
+            if (missingGameState === 'guessing') return '❓ Paso 3: "¡Open your eyes! What’s missing?" — ¡Que digan el color en inglés!';
+            if (missingGameState === 'revealed') {
+                const c = COLORS.find(item => item.id === hiddenColorId);
+                return `🎉 ¡Correcto! El color que faltaba era ${c ? c.en : ''} (${c ? c.es : ''}).`;
+            }
+            return '';
+        }
+
+        function renderMissingCards() {
+            if (missingGameState === 'eyes_closed') {
+                return `
+                    <div class="col-span-full bg-slate-900 text-white rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-inner">
+                        <span class="text-6xl mb-3 animate-bounce">🙈</span>
+                        <h3 class="font-display text-3xl font-bold">Close your eyes!</h3>
+                        <p class="text-slate-300 text-sm mt-1">Nadie puede mirar la pantalla mientras escondemos una tarjeta...</p>
+                    </div>
+                `;
+            }
+
+            return COLORS.map(c => {
+                const isHidden = (missingGameState === 'guessing') && c.id === hiddenColorId;
+                const isJustRevealed = (missingGameState === 'revealed') && c.id === hiddenColorId;
+
+                if (isHidden) {
+                    return `
+                        <div class="rounded-3xl p-6 border-4 border-dashed border-slate-300 bg-slate-100 flex flex-col items-center justify-center text-center min-h-[165px]">
+                            <span class="text-5xl text-slate-400 font-display font-bold">?</span>
+                            <span class="text-xs font-bold text-slate-400 mt-2 uppercase">What's missing?</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="${c.bgClass} ${c.textClass} rounded-3xl p-5 shadow-md border-b-8 ${c.borderClass} flex flex-col items-center justify-center text-center min-h-[165px] transition-all ${isJustRevealed ? 'ring-4 ring-yellow-400 scale-105' : ''}">
+                        <span class="text-4xl sm:text-5xl mb-2">${c.emoji}</span>
+                        <h3 class="font-display text-xl sm:text-2xl font-extrabold">${c.en}</h3>
+                        ${isJustRevealed ? '<span class="mt-2 bg-white text-slate-900 text-xs font-extrabold px-2.5 py-0.5 rounded-full">¡AQUÍ ESTABA!</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMissingControls() {
+            if (missingGameState === 'showing') {
+                return `
+                    <button onclick="startCloseEyesPhase()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-display font-bold text-lg px-7 py-3 rounded-2xl shadow-lg shadow-indigo-200 transition flex items-center gap-2">
+                        <span>🙈 Cerrar los ojos y esconder 1 tarjeta</span>
+                    </button>
+                `;
+            }
+
+            if (missingGameState === 'eyes_closed') {
+                return `
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button onclick="hideRandomCardAndAsk()" class="bg-amber-500 hover:bg-amber-600 text-white font-display font-bold text-base px-6 py-3 rounded-2xl shadow-md transition">
+                            🎲 Esconder 1 al azar y preguntar
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (missingGameState === 'guessing') {
+                return `
+                    <div class="w-full flex flex-col items-center gap-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase">Haz clic en la respuesta que digan los participantes:</span>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            ${COLORS.map(c => `
+                                <button onclick="checkMissingGuess('${c.id}')" class="${c.bgClass} ${c.textClass} px-4 py-2 rounded-xl font-display font-bold text-sm shadow hover:scale-105 transition">
+                                    ${c.en}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (missingGameState === 'revealed') {
+                return `
+                    <button onclick="resetMissingRound()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-display font-bold text-base px-6 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                        <i class="fas fa-redo"></i> Jugar otra ronda
+                    </button>
+                `;
+            }
+            return '';
+        }
+
+        function startCloseEyesPhase() {
+            missingGameState = 'eyes_closed';
+            speakEnglish('Close your eyes!');
+            refreshMissingUI();
+        }
+
+        function hideRandomCardAndAsk() {
+            const random = COLORS[Math.floor(Math.random() * COLORS.length)];
+            hiddenColorId = random.id;
+            missingGameState = 'guessing';
+            playTone('pop');
+            speakEnglish("Open your eyes! What's missing?");
+            refreshMissingUI();
+        }
+
+        checkMissingGuess(guessId) {
+            const guessedColor = COLORS.find(c => c.id === guessId);
+            if (guessId === hiddenColorId) {
+                missingGameState = 'revealed';
+                playTone('success');
+                speakEnglish(`Yes! ${guessedColor.en}! Great job!`);
+                triggerConfetti();
+                refreshMissingUI();
+            } else {
+                playTone('error');
+                speakEnglish(`Not ${guessedColor.en}. Try again!`);
+                showToast('❌', `No es ${guessedColor.en}. ¡Intenta de nuevo!`);
+            }
+        }
+
+        function resetMissingRound() {
+            missingGameState = 'showing';
+            hiddenColorId = null;
+            refreshMissingUI();
+        }
+
+        function refreshMissingUI() {
+            const banner = document.getElementById('missing-banner');
+            const grid = document.getElementById('missing-cards-grid');
+            const controls = document.getElementById('missing-controls');
+            if (banner) banner.innerHTML = getMissingBannerText();
+            if (grid) grid.innerHTML = renderMissingCards();
+            if (controls) controls.innerHTML = renderMissingControls();
+        }
+
+        // --- SLIDE 4: REWARD - ENGLISH STAR ---
+        function renderAwardSlide(container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-between h-full text-center space-y-5 my-auto">
+                    <div>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Reconocimiento al Ganador</span>
+                        <h2 class="font-display text-3xl sm:text-4xl font-bold text-slate-800 mt-1">🏆 Entrega de Estrella</h2>
+                        <p class="text-sm text-slate-500">Escribe el nombre del ganador para personalizar la estrella y celebrar.</p>
+                    </div>
+
+                    <!-- Interactive English Star Badge -->
+                    <div id="star-badge" class="relative bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 text-slate-900 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl border-4 border-yellow-200 star-glow">
+                        <div class="text-5xl sm:text-6xl mb-2">⭐</div>
+                        <h3 class="font-display text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-950">
+                            ⭐ ENGLISH STAR ⭐
+                        </h3>
+                        <p class="font-bold text-sm uppercase tracking-widest text-amber-900 mt-1">
+                            English Fun Club
+                        </p>
+
+                        <div class="my-4 bg-white/80 backdrop-blur-sm rounded-2xl py-2.5 px-4 border border-amber-300">
+                            <p id="star-winner-display" class="font-display text-xl sm:text-2xl font-bold text-indigo-700">
+                                ${winnerName ? winnerName : '¡Excelente Participante!'}
+                            </p>
+                        </div>
+
+                        <p class="font-display text-xl font-bold text-amber-950">Great job!</p>
+                        <p class="text-sm font-semibold text-amber-900">You are an English star!</p>
+                    </div>
+
+                    <!-- Name Input & Celebration Controls -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
+                        <input
+                            type="text"
+                            id="winner-input"
+                            value="${winnerName}"
+                            oninput="updateWinnerName(this.value)"
+                            placeholder="Nombre del ganador(a)..."
+                            class="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm font-semibold"
+                        />
+                        <button onclick="celebrateWinner()" class="w-full sm:w-auto shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-display font-bold px-6 py-3 rounded-2xl shadow-lg shadow-amber-200 transition flex items-center justify-center gap-2">
+                            <span>🎉 ¡Celebrar!</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateWinnerName(val) {
+            winnerName = val;
+            const display = document.getElementById('star-winner-display');
+            if (display) {
+                display.textContent = winnerName.trim() ? winnerName : '¡Excelente Participante!';
+            }
+        }
+
+        function celebrateWinner() {
+            playTone('success');
+            const namePart = winnerName.trim() ? `${winnerName}, ` : '';
+            speakEnglish(`Great job! ${namePart}You are an English star!`);
+            triggerConfetti();
+            showToast('⭐', '¡Felicitaciones! You are an English star!');
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // ==========================================
+        // INITIALIZE ON LOAD
+        // ==========================================
+        window.onload = function() {
+            renderSlide();
+            updateNavigation();
+        };
+    </script>
+</body>
+</html>
