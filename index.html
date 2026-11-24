@@ -752,7 +752,7 @@
             refreshMissingUI();
         }
 
-        checkMissingGuess(guessId) {
+       function checkMissingGuess(guessId) {
             const guessedColor = COLORS.find(c => c.id === guessId);
             if (guessId === hiddenColorId) {
                 missingGameState = 'revealed';
